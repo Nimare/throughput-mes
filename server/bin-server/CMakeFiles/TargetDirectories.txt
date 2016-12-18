@@ -1,3 +1,0 @@
-/home/milan/throughput-mes/throughput-mes/server/bin-server/CMakeFiles/edit_cache.dir
-/home/milan/throughput-mes/throughput-mes/server/bin-server/CMakeFiles/rebuild_cache.dir
-/home/milan/throughput-mes/throughput-mes/server/bin-server/CMakeFiles/ThroughputMesServer.dir
