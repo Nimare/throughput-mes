@@ -7,11 +7,10 @@
 #include <strings.h>
 
 #define MAX_CONN_REQ_QUEUE 5
-
-void handle_connection(int socket)
-{
-
-}
+#define CONTROL_WORD_LENGTH 5
+typedef enum ServerState {SERVER_IDLE = 0,
+			  SERVER_SEND = 1,
+			  SERVER_RECV = 2} ServerState;
 
 void nonfatal_error(const char *msg)
 {
@@ -22,6 +21,41 @@ void fatal_error(const char *msg)
 {
   perror(msg);
   exit(-1);
+}
+
+void handle_connection(int socket)
+{
+  int n;
+  char buffer[4096];
+  bzero(buffer, 4096);
+  ServerState state = SERVER_IDLE;
+  while (1) {
+    switch (state) {
+    case SERVER_IDLE:
+      printf("Reading socket\n");
+      n = read(socket, buffer, CONTROL_WORD_LENGTH);
+      printf("Read %d bytes on the socket\n",n);
+      if (n < 0) {
+	nonfatal_error("Socket read error");
+	return;
+      }
+      else if (n == 0) {
+	nonfatal_error("Remote socket closed before sending control word\n");
+	return;
+      }
+      printf("Control Word received %s 0x%02x 0x%02x 0x%02x 0x%02x",
+	     buffer[0]?"Server recv":"Server send",
+	     buffer[1],
+	     buffer[2],
+	     buffer[3],
+	     buffer[4]);
+      break;
+    case SERVER_SEND:
+      break;
+    case SERVER_RECV:
+      break;
+    }
+  }
 }
 
 int main(int argc, char *argv[])
@@ -54,7 +88,7 @@ int main(int argc, char *argv[])
   
   while (1) {
     newsocketfd = accept(socketfd, (struct sockaddr *) &client_addr, &client_addr_len);
-
+    printf("New connection accepted\n");
     if (newsocketfd <0) {
       fatal_error("ERROR on accepting connection");
     }
@@ -69,6 +103,7 @@ int main(int argc, char *argv[])
     if (pid == 0) {
       close(socketfd);
       handle_connection(newsocketfd);
+      printf("Nothing more to read closing socket\n");
       exit(0);
     }
     else {
