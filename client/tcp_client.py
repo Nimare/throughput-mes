@@ -39,5 +39,5 @@ class TcpClient:
                 raise RuntimeError("socket connection broken")
             chunks.append(chunk)
             bytes_recd = bytes_recd + len(chunk)
-        return ''.join(chunks)
+        return b''.join(chunks)
         
