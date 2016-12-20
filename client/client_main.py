@@ -16,7 +16,7 @@ def main():
     length = 29999
     client.send_control_word(CLIENT_SEND,
                                     length)
-    sent = client.send(bytes([1,2,3,4,5,6,7,8,9]))
+    sent = client.send(bytes(length))
     print("Bytes sent:", sent)
     
 if __name__ == "__main__":

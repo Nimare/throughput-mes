@@ -24,13 +24,10 @@ class TcpClient:
         return totalsent
 
     def send_control_word(self,server_mode, length):
-        sent = self.sock.send(bytes([1]))
-        if sent != 1:
+        control_word = bytes([server_mode]) + struct.pack('!I', length)
+        sent = self.sock.send(control_word)
+        if sent != 5:
             raise RuntimeError("socket connection broken")
-        sent = self.sock.send(struct.pack('!I', length))
-        if sent != 4:
-            raise RuntimeError("socket connection broken")
-        
 
         
     def recv(self, msg_len):

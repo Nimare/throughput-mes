@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/socket.h> 
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,9 +9,11 @@
 
 #define MAX_CONN_REQ_QUEUE 5
 #define CONTROL_WORD_LENGTH 5
+#define CLIENT_SEND 0
+#define CLIENT_RECV 1
 typedef enum ServerState {SERVER_IDLE = 0,
-			  SERVER_SEND = 1,
-			  SERVER_RECV = 2} ServerState;
+			  SERVER_RECV = 1,
+			  SERVER_SEND = 2} ServerState;
 
 void nonfatal_error(const char *msg)
 {
@@ -23,9 +26,39 @@ void fatal_error(const char *msg)
   exit(-1);
 }
 
+void recv_random_payload(int socket, uint32_t length)
+{
+  ssize_t n;
+  ssize_t remaining = length;
+  char buffer[4096];
+  while (remaining != 0) {
+    if (remaining <= 4096) {
+      n = read(socket, buffer, remaining);
+    } else {
+      n = read(socket, buffer, 4096);
+    }
+    remaining -= n;
+  }
+}
+
+void send_random_payload(int socket, uint32_t length)
+{
+  ssize_t n;
+  ssize_t remaining = length;
+  char buffer[4096];
+  while (remaining != 0) {
+    if (remaining <= 4096) {
+      n = write(socket, buffer, remaining);
+    } else {
+      n = write(socket, buffer, 4096);
+    }
+    remaining -= n;
+  }
+}
+
 void handle_connection(int socket)
 {
-  int n;
+  ssize_t n;
   char buffer[4096];
   bzero(buffer, 4096);
   ServerState state = SERVER_IDLE;
@@ -34,7 +67,7 @@ void handle_connection(int socket)
     case SERVER_IDLE:
       printf("Reading socket\n");
       n = read(socket, buffer, CONTROL_WORD_LENGTH);
-      printf("Read %d bytes on the socket\n",n);
+      printf("Read %ld bytes on the socket\n",n);
       if (n < 0) {
 	nonfatal_error("Socket read error");
 	return;
@@ -43,12 +76,20 @@ void handle_connection(int socket)
 	nonfatal_error("Remote socket closed before sending control word\n");
 	return;
       }
-      printf("Control Word received %s 0x%02x 0x%02x 0x%02x 0x%02x",
-	     buffer[0]?"Server recv":"Server send",
-	     buffer[1],
-	     buffer[2],
-	     buffer[3],
-	     buffer[4]);
+      uint32_t length = ntohl(*(uint32_t *)(buffer+1));
+      printf("length %ul\n", length);
+      if (buffer[0] == CLIENT_SEND) {
+	state = SERVER_RECV;
+	recv_random_payload(socket, length);
+	return;
+      } else if (buffer[0] == CLIENT_RECV) {
+	state = SERVER_SEND;
+	send_random_payload(socket, length);
+	return;
+      } else {
+	nonfatal_error("faulty control word");
+	return;
+      }
       break;
     case SERVER_SEND:
       break;
@@ -92,14 +133,14 @@ int main(int argc, char *argv[])
     if (newsocketfd <0) {
       fatal_error("ERROR on accepting connection");
     }
-
+   #if 0
     int pid = fork();
 
     if (pid < 0) {
       nonfatal_error("NONFATAL unable to create new thread");
       close(newsocketfd);
     }
-
+    
     if (pid == 0) {
       close(socketfd);
       handle_connection(newsocketfd);
@@ -109,6 +150,9 @@ int main(int argc, char *argv[])
     else {
       close(newsocketfd);
     }
-    
+    #endif
+    //remove
+    handle_connection(newsocketfd);
+    close(newsocketfd);
   }
 }
