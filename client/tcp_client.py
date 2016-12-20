@@ -4,6 +4,7 @@ import os
 import sys
 import struct
 
+
 class TcpClient:
     def __init__(self, sock=None):
         if sock is None:
@@ -13,6 +14,9 @@ class TcpClient:
 
     def connect(self, host, port):
         self.sock.connect((host, port))
+
+    def close(self):
+        self.sock.close()
 
     def send(self, message):
         totalsent = 0
@@ -28,7 +32,6 @@ class TcpClient:
         sent = self.sock.send(control_word)
         if sent != 5:
             raise RuntimeError("socket connection broken")
-
         
     def recv(self, msg_len):
         chunks = []
