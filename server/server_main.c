@@ -1,106 +1,42 @@
 #include <sys/types.h>
 #include <sys/socket.h> 
 #include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <strings.h>
 
+#include "server_common.h"
+
 #define MAX_CONN_REQ_QUEUE 5
-#define CONTROL_WORD_LENGTH 5
-#define CLIENT_SEND 0
-#define CLIENT_RECV 1
+#define DEFAULT_PORT 55555
 
-void nonfatal_error(const char *msg)
-{
-  perror(msg);
-}
 
-void fatal_error(const char *msg)
+void display_usage()
 {
-  perror(msg);
+  fprintf(stderr, "Usage: ThroughputServer -p [port number]\n");
   exit(1);
-}
-void send_stream_endmark(int socket)
-{
-  ssize_t n;
-  unsigned char end_mark = 0xFF;
-  n = write(socket, &end_mark, 1);
-  if (n != 1) {
-    nonfatal_error("Unable to send stream end mark");
-  }
-}
-void recv_random_payload(int socket, uint32_t length)
-{
-  ssize_t n;
-  ssize_t remaining = length;
-  char buffer[4096];
-  while (remaining != 0) {
-    if (remaining <= 4096) {
-      n = read(socket, buffer, remaining);
-    } else {
-      n = read(socket, buffer, 4096);
-    }
-    remaining -= n;
-  }
-}
-
-void send_random_payload(int socket, uint32_t length)
-{
-  ssize_t n;
-  ssize_t remaining = length;
-  char buffer[4096];
-  while (remaining != 0) {
-    if (remaining <= 4096) {
-      n = write(socket, buffer, remaining);
-    } else {
-      n = write(socket, buffer, 4096);
-    }
-    remaining -= n;
-  }
-}
-
-void handle_connection(int socket)
-{
-  ssize_t n;
-  char buffer[4096];
-  bzero(buffer, 4096);
-  while (1) {
-      printf("Reading control word socket\n");
-      n = read(socket, buffer, CONTROL_WORD_LENGTH);
-      printf("Read %ld bytes on the socket\n",n);
-      if (n < 0) {
-	nonfatal_error("Socket read error");
-	return;
-      }
-      else if (n == 0) {
-	nonfatal_error("Remote socket closed before sending control word\n");
-	return;
-      }
-      else if (n != 5) {
-	nonfatal_error("Bad control word size");
-      }
-      uint32_t length = ntohl(*(uint32_t *)(buffer+1));
-      printf("length %ul\n", length);
-      if (buffer[0] == CLIENT_SEND) {
-	recv_random_payload(socket, length);
-	send_stream_endmark(socket);
-      } else if (buffer[0] == CLIENT_RECV) {
-	send_random_payload(socket, length);
-	send_stream_endmark(socket);
-      } else {
-	nonfatal_error("faulty control word");
-	return;
-      }
-  }
 }
 
 int main(int argc, char *argv[])
 {
   int socketfd;
   int newsocketfd;
+  int port = DEFAULT_PORT;
+  int c;
   struct sockaddr_in server_addr;
+
+  opterr = 0;
+  while ((c = getopt (argc, argv, "hp:")) != -1)
+    switch (c)
+      {
+      case 'p':
+        port = atoi(optarg);
+        break;
+      case 'h':
+      case '?':
+        display_usage();
+      default:
+        abort ();
+      }
 
   
   socketfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -111,7 +47,7 @@ int main(int argc, char *argv[])
   bzero((char *) &server_addr, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(55555);
+  server_addr.sin_port = htons(port);
 
   if (bind(socketfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
     fatal_error("ERROR on binding");
@@ -130,7 +66,7 @@ int main(int argc, char *argv[])
     if (newsocketfd <0) {
       fatal_error("ERROR on accepting connection");
     }
-   #if 0
+
     int pid = fork();
 
     if (pid < 0) {
@@ -147,9 +83,5 @@ int main(int argc, char *argv[])
     else {
       close(newsocketfd);
     }
-    #endif
-    //remove
-    handle_connection(newsocketfd);
-    close(newsocketfd);
   }
 }

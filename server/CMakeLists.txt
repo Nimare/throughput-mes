@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (ThroughputMesServer)
 
-add_executable(ThroughputMesServer server_main.c)
+add_executable(ThroughputMesServer server_main.c stream_handler.c)
 
 if ( CMAKE_COMPILER_IS_GNUCC )
     target_compile_options(ThroughputMesServer PRIVATE -Wall -Wextra)
