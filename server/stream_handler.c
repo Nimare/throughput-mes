@@ -62,7 +62,7 @@ void handle_connection(int socket)
 	return;
       }
       else if (n == 0) {
-	nonfatal_error("Remote socket closed before sending control word\n");
+	printf("Remote socket closed\n");
 	return;
       }
       else if (n != 5) {
@@ -71,9 +71,11 @@ void handle_connection(int socket)
       uint32_t length = ntohl(*(uint32_t *)(buffer+1));
       printf("length %ul\n", length);
       if (buffer[0] == CLIENT_SEND) {
+	printf("Recieving %ul random bytes\n", length);
 	recv_random_payload(socket, length);
 	send_stream_endmark(socket);
       } else if (buffer[0] == CLIENT_RECV) {
+	printf("Sending %ul random bytes\n", length);
 	send_random_payload(socket, length);
 	send_stream_endmark(socket);
       } else {

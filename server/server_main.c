@@ -12,7 +12,7 @@
 
 void display_usage()
 {
-  fprintf(stderr, "Usage: ThroughputServer -p [port number]\n");
+  fprintf(stderr, "Usage: ThroughputServer [-p port_number]\n");
   exit(1);
 }
 
@@ -26,8 +26,7 @@ int main(int argc, char *argv[])
 
   opterr = 0;
   while ((c = getopt (argc, argv, "hp:")) != -1)
-    switch (c)
-      {
+    switch (c) {
       case 'p':
         port = atoi(optarg);
         break;
@@ -36,7 +35,7 @@ int main(int argc, char *argv[])
         display_usage();
       default:
         abort ();
-      }
+    }
 
   
   socketfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
   while (1) {
     newsocketfd = accept(socketfd, (struct sockaddr *) &client_addr, &client_addr_len);
     printf("New connection accepted\n");
-    if (newsocketfd <0) {
+    if (newsocketfd < 0) {
       fatal_error("ERROR on accepting connection");
     }
 
