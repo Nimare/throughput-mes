@@ -45,7 +45,9 @@ Measure (D)ownlink, (U)plink or (E)xit? Please press one alternative:d
 Please add the length of the measurement stream between 0 and 2^32:10000
 Time of download 0.4115593659998922
 Approximate downlink speed is 23.728350772127875 kilobytes /sec
+
 Measure (D)ownlink, (U)plink or (E)xit? Please press one alternative:u
 Please add the length of the measurement stream between 0 and 2^32:10000
 Time of upload 1.52188960400008
 Approximate uplink speed is 6.416776206587115 kilobytes /sec
+
