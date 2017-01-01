@@ -41,13 +41,18 @@ Server: AWS EC2 Ubuntu 16.04
 Client: Home desktop Ubuntu 16.04 over Virtualbox Windows 8
 
 client_main.py -p 55555 ec2-35-160-72-197.us-west-2.compute.amazonaws.com
-Measure (D)ownlink, (U)plink or (E)xit? Please press one alternative:d
-Please add the length of the measurement stream between 0 and 2^32:10000
-Time of download 0.4115593659998922
-Approximate downlink speed is 23.728350772127875 kilobytes /sec
 
-Measure (D)ownlink, (U)plink or (E)xit? Please press one alternative:u
-Please add the length of the measurement stream between 0 and 2^32:10000
-Time of upload 1.52188960400008
-Approximate uplink speed is 6.416776206587115 kilobytes /sec
+    Measure (D)ownlink, (U)plink or (E)xit?
+    Please press one alternative:d
+    Please add the length of the measurement
+    stream between 0 and 2^32:10000
+    Time of download 0.4115593659998922
+    Approximate downlink speed is 23.728350772127875 kilobytes /sec
+
+    Measure (D)ownlink, (U)plink or (E)xit?
+    Please press one alternative:u
+    Please add the length of the measurement
+    stream between 0 and 2^32:10000
+    Time of upload 1.52188960400008
+    Approximate uplink speed is 6.416776206587115 kilobytes /sec
 
